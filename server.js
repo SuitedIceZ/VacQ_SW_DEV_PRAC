@@ -7,6 +7,9 @@ const helmet = require("helmet");
 const xss = require("xss-clean");
 const rateLimit = require("express-rate-limit");
 
+const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerUI = require("swagger-ui-express");
+
 // Load env vars
 dotenv.config({ path: "./config/config.env" });
 
@@ -33,10 +36,29 @@ app.use(helmet());
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 mins
-  max: 1,
+  max: 100,
 });
 app.use(limiter);
 // TODO: add hpp and cors
+
+const swaggerOption = {
+  swaggerDefinition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Library API",
+      version: "1.0.0",
+      description: "A Simple Express VacQ API",
+    },
+    servers: [
+      {
+        url: "http://localhost:3023/api/v1",
+      },
+    ],
+  },
+  apis: ["./routes/*.js"],
+};
+const swaggerDocs = swaggerJsDoc(swaggerOption);
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 
 const hospitals = require("./routes/hospitals");
 const appointments = require("./routes/appointments");
